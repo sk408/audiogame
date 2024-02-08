@@ -92,6 +92,7 @@
         <button id="randomButton2">Response</button> <br>
 
         <button onclick="updateGrid('2')" style="display:none;">Update Grid</button>
+        <input type="hidden" id="lastCanvas" value="">
     </div>
     <script>
         includeCanvasLogic(1, "#00f", 12, 13);
@@ -172,7 +173,7 @@ document.addEventListener('contextmenu', function (event) {
 
             let score = 0; // Initialize the score
 
-            function placeDot(x, y, currentId) {
+            function placeDot(x, y) {
                 dots = dots.filter(dot => dot.x !== x);
                 dots.push({ x, y });
                 redrawCanvas();
@@ -183,13 +184,10 @@ document.addEventListener('contextmenu', function (event) {
                 const decibelLevel = -10 + Math.floor(y / (gridSizeY / 2)) * 5;
 
                 // Check if the placed dot matches any of the random decibel levels
-                if (randomDecibelLevels[frequencyIndex] === decibelLevel && currentId === canvasId) {
-                    score += 1000; // Incrase the score by 1000
-                    console.log(canvasId);  
-                } else 
-                if (randomDecibelLevels[frequencyIndex] !== decibelLevel && currentId === canvasId) {
+                if (randomDecibelLevels[frequencyIndex] === decibelLevel && Number(document.getElementById('lastCanvas').value) === canvasId) {
+                    score += 1000; // Increase the score by 1000
+                } else if (randomDecibelLevels[frequencyIndex] !== decibelLevel && Number(document.getElementById('lastCanvas').value) === canvasId) {
                     score -= 5000; 
-                    console.log(canvasId);
                 }
                 document.getElementById(`scoreDisplay${canvasId}`).textContent = `Score: ${score}`; // Update the score display
             }
@@ -218,7 +216,7 @@ document.addEventListener('contextmenu', function (event) {
 
                 lastY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2);
                 lastX = Math.round(mouseX / gridSizeX) * gridSizeX;
-
+                document.getElementById('lastCanvas').value = canvasId;
                 setTimeout(() => {
                     if (clickCount >= 2) {
                         // Double click detected
@@ -235,7 +233,7 @@ document.addEventListener('contextmenu', function (event) {
                         if (dotIndex !== -1) {
                             removeDot(dotIndex); // If there is, remove it
                         } else {
-                            placeDot(gridX, gridY, canvasId); // If there isn't, add a new dot
+                            placeDot(gridX, gridY); // If there isn't, add a new dot
                         }
                     }
                     clickCount = 0;
@@ -251,6 +249,7 @@ document.addEventListener('contextmenu', function (event) {
             
                 lastY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2);
                 lastX = Math.round(mouseX / gridSizeX) * gridSizeX;
+                document.getElementById('lastCanvas').value = canvasId;
             
                 setTimeout(() => {
                     if (clickCount >= 2) {
@@ -270,7 +269,7 @@ document.addEventListener('contextmenu', function (event) {
                         if (dotIndex !== -1) {
                             removeDot(dotIndex); // If there is, remove it
                         } else {
-                            placeDot(gridX, gridY, canvasId); // If there isn't, add a new dot
+                            placeDot(gridX, gridY); // If there isn't, add a new dot
                         }
                     }
                     clickCount = 0;
@@ -278,37 +277,38 @@ document.addEventListener('contextmenu', function (event) {
             });
             const decibelIndicator = document.getElementById(`decibelIndicator${canvasId}`);
             let indicatorInterval;
-            let lastCanvas;
-document.addEventListener('click', function(e) {
-    const canvas1 = document.getElementById('gridCanvas1');
-    const canvas2 = document.getElementById('gridCanvas2');
-    const rect1 = canvas1.getBoundingClientRect();
-    const rect2 = canvas2.getBoundingClientRect();
-    const x = e.clientX;
-    const y = e.clientY;
+            // let lastCanvas;
+// document.addEventListener('click', function(e) {
+//     const canvas1 = document.getElementById('gridCanvas1');
+//     const canvas2 = document.getElementById('gridCanvas2');
+//     const rect1 = canvas1.getBoundingClientRect();
+//     const rect2 = canvas2.getBoundingClientRect();
+//     const x = e.clientX;
+//     const y = e.clientY;
 
-    if (x >= rect1.left && x <= rect1.right && y >= rect1.top && y <= rect1.bottom) {
-        lastCanvas = 1;
-    } else if (x >= rect2.left && x <= rect2.right && y >= rect2.top && y <= rect2.bottom) {
-        lastCanvas = 2;
-    }
-});
-document.addEventListener('touchstart', function(e) {
-    const canvas1 = document.getElementById('gridCanvas1');
-    const canvas2 = document.getElementById('gridCanvas2');
-    const rect1 = canvas1.getBoundingClientRect();
-    const rect2 = canvas2.getBoundingClientRect();
-    const touch = e.touches[0];
-    const x = touch.clientX;
-    const y = touch.clientY;
+//     if (x >= rect1.left && x <= rect1.right && y >= rect1.top && y <= rect1.bottom) {
+//         lastCanvas = 1;
+//     } else if (x >= rect2.left && x <= rect2.right && y >= rect2.top && y <= rect2.bottom) {
+//         lastCanvas = 2;
+//     }
+// });
+// document.addEventListener('touchstart', function(e) {
+//     const canvas1 = document.getElementById('gridCanvas1');
+//     const canvas2 = document.getElementById('gridCanvas2');
+//     const rect1 = canvas1.getBoundingClientRect();
+//     const rect2 = canvas2.getBoundingClientRect();
+//     const touch = e.touches[0];
+//     const x = touch.clientX;
+//     const y = touch.clientY;
 
-    if (x >= rect1.left && x <= rect1.right && y >= rect1.top && y <= rect1.bottom) {
-        lastCanvas = 1;
-    } else if (x >= rect2.left && x <= rect2.right && y >= rect2.top && y <= rect2.bottom) {
-        lastCanvas = 2;
-    }
-});
+//     if (x >= rect1.left && x <= rect1.right && y >= rect1.top && y <= rect1.bottom) {
+//         lastCanvas = 1;
+//     } else if (x >= rect2.left && x <= rect2.right && y >= rect2.top && y <= rect2.bottom) {
+//         lastCanvas = 2;
+//     }
+// });
             canvas.addEventListener('mousedown', function (e) {
+                
                 decibelIndicator.classList.add('flashing');
                 const rect = canvas.getBoundingClientRect();
                 const mouseY = e.clientY - rect.top;
@@ -355,6 +355,7 @@ document.addEventListener('touchstart', function(e) {
                 }, 500);
             });
             canvas.addEventListener('mouseup', function (e) {
+                
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
@@ -698,7 +699,7 @@ canvas.addEventListener('touchend', function(e) {
                 // and lastFrequencyIndex and lastDecibelLevel are stored globally
                 const x = lastX;
                 const y = lastY;
-                placeDot(x, y, lastCanvas);
+                placeDot(x, y);
             }
         });
 
