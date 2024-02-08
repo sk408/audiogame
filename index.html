@@ -2,6 +2,8 @@
 <html>
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
     <title>Audiogram Game by Stephen Kanney</title>
     <style>
         body {
@@ -58,8 +60,10 @@
             height: 47.5vh; /* Adjusted to leave 5% for buttons */
         }
     }
-            body {
+    body {
             -webkit-touch-callout: none;
+            user-select: none;
+
         }
     </style>
 
@@ -87,6 +91,10 @@
     <script>
         includeCanvasLogic(1, "#00f", 12, 13);
         includeCanvasLogic(2, "#f00", 12, 13);
+        // Disable long-press context menu
+document.addEventListener('touchstart', function (event) {
+    event.preventDefault();
+});
         function includeCanvasLogic(canvasId, color, numSquaresX, numSquaresY) {
             console.log("Canvas logic included for canvas ID:", canvasId);
             const canvas = document.getElementById(`gridCanvas${canvasId}`);
