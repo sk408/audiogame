@@ -338,7 +338,43 @@ generateRandomDecibelLevels();
             }, 300); // Adjust the flashing rate as needed
         }, 1); // Start flashing if held down for more than 20ms
     });
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let oscillator;
+let gainNode;
+let beepInterval;
+canvas.addEventListener('mousedown', function (e) {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    const frequencyIndex = Math.round(mouseX / gridSizeX) ;
+    const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
+    const frequency = frequencies[frequencyIndex] || 440; // Default to A4 if out of bounds
+console.log("Frequency:", frequency);
+    oscillator = audioCtx.createOscillator();
+    gainNode = audioCtx.createGain();
 
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+
+    beepInterval = setInterval(() => {
+        oscillator = audioCtx.createOscillator(); // Recreate the oscillator for each beep
+        oscillator.type = 'sine';
+        oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+        oscillator.connect(gainNode);
+
+        gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Start beep
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.2  ); // Stop beep after 100ms
+    }, 650); // Beep every half second
+});
+
+canvas.addEventListener('mouseup', function (e) {
+    clearInterval(beepInterval); // Stop the beeping
+    if (oscillator) {
+        oscillator.disconnect();
+    }
+});
     canvas.addEventListener('mouseup', function (e) {
         if (tempX) {
             // Stop flashing
@@ -361,8 +397,8 @@ window.addEventListener('resize', function () {
     canvas.width = window.innerWidth / 4;
     canvas.height = window.innerHeight * .8;
 
-    const numSquaresX = parseInt(document.getElementById(`numSquaresX${canvsId}`).value);
-    const numSquaresY = parseInt(document.getElementById(`numSquaresY${canvsId}`).value);
+    const numSquaresX = parseInt(document.getElementById(`numSquaresX${canvasId}`).value);
+    const numSquaresY = parseInt(document.getElementById(`numSquaresY${canvasId}`).value);
     gridSizeX = canvas.width / numSquaresX;
     gridSizeY = canvas.height / numSquaresY;
 
