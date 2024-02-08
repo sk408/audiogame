@@ -75,8 +75,8 @@
 </head>
 
 <body oncontextmenu="return false;">
-    <button onclick="setSpeaker('left')">Left Speaker</button>
-    <button onclick="setSpeaker('right')">Right Speaker</button>
+<button onclick="getAudioOutputs()">Get Audio Outputs</button>
+
     <div>Double click or press S to store threshold.<br>Thresholds are randomly generated each load.<br>Use your mouse to present tones. </div>
     <div class="canvas-container">
 
@@ -98,18 +98,38 @@
         <input type="hidden" id="lastCanvas" value="">
     </div>
     <script>
-                function setSpeaker(speaker) {
-            const audioElement = document.getElementById('myAudio');
-            if (audioElement.setSinkId) {
-                // Use setSinkId if available (modern browsers)
-                audioElement.setSinkId(speaker)
-                    .then(() => console.log(`Audio output set to ${speaker} speaker`))
-                    .catch(error => console.error(`Error setting audio output: ${error}`));
-            } else {
-                // Fallback for older browsers (may not support speaker selection)
-                console.warn('Speaker selection not supported in this browser.');
-            }
-        }
+async function getAudioOutputs() {
+    try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioDevices = devices.filter(device => device.kind === 'audiooutput');
+        audioDevices.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.text = device.label;
+            select.appendChild(option);
+        });
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+function setAudioOutput(audioElement, deviceId) {
+    if (typeof audioElement.sinkId !== 'undefined') {
+        audioElement.setSinkId(deviceId)
+            .then(() => {
+                console.log(`Success, audio output device attached: ${deviceId}`);
+            })
+            .catch(error => {
+                let errorMessage = error;
+                if (error.name === 'SecurityError') {
+                    errorMessage = `You need to use HTTPS for selecting audio output device: ${error}`;
+                }
+                console.error(errorMessage);
+            });
+    } else {
+        console.warn('Browser does not support output device selection.');
+    }
+}
         includeCanvasLogic(1, "#00f", 12, 13);
         includeCanvasLogic(2, "#f00", 12, 13);
         // Disable long-press context menu
