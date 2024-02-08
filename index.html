@@ -6,7 +6,7 @@
         <style>
             body {
                 display: flex;
-                flex-direction: column;
+                flex-direction: row;
                 justify-content: center;
                 align-items: center;
                 height: 100vh;
@@ -14,10 +14,10 @@
                 background-color: #f0f0f0;
             }
 
-            #gridCanvas {
+            #gridCanvas1, #gridCanvas2 {
                 border: 1px solid black;
-                width: 25%;
-                height: 80%;
+                /* width: 25%; */
+                /* height: 80%; */
             }
 
             @keyframes flash {
@@ -35,14 +35,14 @@
                     background-color: transparent;
                 }
             }
-            #decibelIndicator.flashing {
+            #decibelIndicator1.flashing, #decibelIndicator2.flashing {
         animation: flash 0.6s infinite;
         background-color: rgb(46, 158, 228);
     }
             .flashing {
                 animation: flash 0.2s infinite;
             }
-#randomButton.lightUp {
+#randomButton1.lightUp, #randomButton2.lightUp {
     background-color: #00ff00; /* Change this to the color you want */
 }
         </style>
@@ -50,44 +50,55 @@
     </head>
 
     <body>
-        <!-- Add this line to your HTML body -->
-        <button id="decibelIndicator">Decibel Level: N/A</button>
-        <button id="randomButton">Response</button>
-        <canvas id="gridCanvas"></canvas>
-        <br>
-        <button id="redButton">Red</button>
-        <button id="blueButton">Blue</button>
-        <br>
-        <input type="number" id="numSquaresX" value="12" min="1">
-        <input type="number" id="numSquaresY" value="13" min="1">
-        <button onclick="updateGrid()">Update Grid</button>
+        <div class="canvas-container">
+
+            <canvas id="gridCanvas1"></canvas>
+            <div id="scoreDisplay1">Score: 0</div>
+            <button id="decibelIndicator1">Decibel Level: N/A</button>
+            <button id="randomButton1">Response</button>
+            <br>
+            <button id="redButton1">Red</button>
+            <button id="blueButton1">Blue</button>
+            <br>
+            <input type="number" id="numSquaresX1" value="12" min="1" style="display:  none;">
+            <input type="number" id="numSquaresY1" value="13" min="1" style="display: none;">
+            <button onclick="updateGrid('1')" style="display: none;">Update Grid</button>
+        </div>
+        <div class="canvas-container">
+
+            <canvas id="gridCanvas2"></canvas>
+            <div id="scoreDisplay2">Score: 0</div>
+            <button id="decibelIndicator2">Decibel Level: N/A</button>
+            <button id="randomButton2">Response</button>            <br>
+            <button id="redButton2">Red</button>
+            <button id="blueButton2">Blue</button>
+            <br>
+            <input type="number" id="numSquaresX2" value="12" min="1" style="display:none;">
+            <input type="number" id="numSquaresY2" value="13" min="1" style="display:none;">
+            <button onclick="updateGrid('2')" style="display:none;">Update Grid</button>
+        </div>
         <script>
-            const canvas = document.getElementById('gridCanvas');
+                        includeCanvasLogic(1, "#00f");
+                        includeCanvasLogic(2, "#f00");  
+            function includeCanvasLogic(canvasId, color) {
+                console.log("Canvas logic included for canvas ID:", canvasId);
+            
+            const canvas = document.getElementById(`gridCanvas${canvasId}`);
             const ctx = canvas.getContext('2d');
 
             const dotRadius = 5;
             let dots = []; // Array to store the dots
             let gridSizeX = 50;
             let gridSizeY = 50;
-            
-
-            // Get the actual width of the canvas
-            // Set the canvas's width and height attributes to match its actual size
             canvas.width = window.innerWidth / 4;
             canvas.height = window.innerHeight * .8;
-
-            // Click event
-
-            // Redraw the canvas
-            // Redraw the canvas
             function redrawCanvas(gridSizeX, gridSizeY) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
 
-                // Define the frequencies and decibels
                 const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
                 const decibels = Array.from({ length: canvas.height / gridSizeY + 1 }, (_, i) => -10 + i * 10);
-
-                // Redraw the grid
+                const decibelsHalf = Array.from({ length: canvas.height / (gridSizeY / 2) + 1 }, (_, i) => -10 + i * 5); // 5 decibel increments
+                ctx.fillStyle=color;
                 for (let i = 0; i <= frequencies.length; i++) {
                     const x = i * gridSizeX;
                     ctx.moveTo(x, 0);
@@ -100,6 +111,11 @@
                     ctx.lineTo(canvas.width, y);
                     ctx.fillText(decibels[i] + "dB" || '', 5, y - 5); // Draw the decibel label
                 }
+                for (let i = 0; i <= decibelsHalf.length; i++) {
+                    const y = i * (gridSizeY / 2);
+                    // Don't draw the grid line, just the label
+                    ctx.fillText(decibelsHalf[i] + "dB" || '', 5, y - 5); // Draw the decibel label
+                }
                 ctx.strokeStyle = "#ddd";
                 ctx.stroke();
 
@@ -107,86 +123,65 @@
                 for (let dot of dots) {
                     drawDot(dot.x, dot.y);
                 }
-                    // Sort the dots by x-coordinate
-    dots.sort((a, b) => a.x - b.x);
-
-// Draw lines between consecutive dots
-// Draw lines between consecutive dots
-for (let i = 0; i < dots.length - 1; i++) {
-    ctx.beginPath();
-    ctx.moveTo(dots[i].x, dots[i].y);
-    ctx.lineTo(dots[i + 1].x, dots[i + 1].y);
-    ctx.strokeStyle = '#000'; // Set the line color
-    ctx.stroke();
-}
-            }
-            canvas.addEventListener('touchstart', function (e) {
-                e.preventDefault(); // Prevent the default action to avoid scrolling the page
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0]; // Get the first touch
-                const touchX = touch.clientX - rect.left;
-                const touchY = touch.clientY - rect.top;
-
-                const gridX = Math.round(touchX / gridSizeX) * gridSizeX;
-                const gridY = Math.round(touchY / gridSizeY) * gridSizeY;
-
-                // Check if there is already a dot at this location
-                const dotIndex = dots.findIndex(dot => dot.x === gridX && dot.y === gridY);
-                if (dotIndex !== -1) {
-                    removeDot(dotIndex); // If there is, remove it
-                } else {
-                    placeDot(gridX, gridY); // If there isn't, add a new dot
+                dots.sort((a, b) => a.x - b.x);
+                for (let i = 0; i < dots.length - 1; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(dots[i].x, dots[i].y);
+                    ctx.lineTo(dots[i + 1].x, dots[i + 1].y);
+                    ctx.strokeStyle = '#000'; // Set the line color
+                    ctx.stroke();
                 }
-            }, false);
-
-            // Call redrawCanvas initially to draw the initial state of the canvas
+            }
+let dotColor = color; // Default dot color
             redrawCanvas();
             updateGrid();
-            // Draw dot function
-            let dotColor = "#00f"; // Default dot color
-
-            // Draw dot function
             function drawDot(x, y) {
                 ctx.beginPath();
                 ctx.arc(x, y, dotRadius, 0, Math.PI * 2);
                 ctx.fillStyle = dotColor; // Use the current dot color
                 ctx.fill();
             }
-
-            // Button click events
-            document.getElementById('redButton').addEventListener('click', function () {
+            document.getElementById(`redButton${canvasId}`).addEventListener('click', function () {
                 dotColor = "#f00"; // Change dot color to red
                 redrawCanvas();
                 updateGrid(); // Redraw the canvas
             });
-            document.getElementById('blueButton').addEventListener('click', function () {
+            document.getElementById(`blueButton${canvasId}`).addEventListener('click', function () {
                 dotColor = "#00f"; // Change dot color to blue
                 redrawCanvas();
                 updateGrid(); // Redraw the canvas
             });
+            let score = 0; // Initialize the score
 
             function placeDot(x, y) {
-                // Find and remove any existing dots on the same y-axis
                 dots = dots.filter(dot => dot.x !== x);
-
-                // Add the new dot to the array
                 dots.push({ x, y });
-
-                // Redraw the canvas with the updated dots
                 redrawCanvas();
                 updateGrid(); // Redraw the canvas
+
+                // Calculate the frequency and decibel index of the placed dot
+                const frequencyIndex = Math.floor(x / gridSizeX);
+                const decibelLevel = -10 + Math.floor(y / gridSizeY) * 10;
+
+                // Check if the placed dot matches any of the random decibel levels
+                if (randomDecibelLevels[frequencyIndex] === decibelLevel) {
+                    score += 1000; // Increase the score by 1000
+                    document.getElementById(`scoreDisplay${canvasId}`).textContent = `Score: ${score}`; // Update the score display
+                }
+                else {
+                    score -= 5000; // Decrease the score by 100
+                    document.getElementById(`scoreDisplay${canvasId}`).textContent = `Score: ${score}`; // Update the score display
+                }
             }
-            // Remove dot function
+            
             function removeDot(index) {
                 dots.splice(index, 1); // Remove the dot from the array
                 redrawCanvas()
                 updateGrid(); // Redraw the canvas
             }
-            // Redraw the canvas
-
             function updateGrid() {
-                const numSquaresX = parseInt(document.getElementById('numSquaresX').value);
-                const numSquaresY = parseInt(document.getElementById('numSquaresY').value);
+                const numSquaresX = parseInt(document.getElementById(`numSquaresX${canvasId}`).value);
+                const numSquaresY = parseInt(document.getElementById(`numSquaresY${canvasId}`).value);
                 gridSizeX = canvas.width / numSquaresX;
                 gridSizeY = canvas.height / numSquaresY;
                 redrawCanvas(gridSizeX, gridSizeY);
@@ -194,57 +189,59 @@ for (let i = 0; i < dots.length - 1; i++) {
             let lastClickTime = 0;
             const doubleClickDelay = 500; // Time in milliseconds
 
+            let clickCount = 0;
+
             canvas.addEventListener('click', function (e) {
-                const currentTime = new Date().getTime();
+                clickCount++;
+                setTimeout(() => {
+                    if (clickCount >= 2) {
+                        // Double click detected
+                        const rect = canvas.getBoundingClientRect();
+                        const mouseX = e.clientX - rect.left;
+                        const mouseY = e.clientY - rect.top;
 
-                if (currentTime - lastClickTime < doubleClickDelay) {
-                    // Double click detected
-                    const rect = canvas.getBoundingClientRect();
-                    const mouseX = e.clientX - rect.left;
-                    const mouseY = e.clientY - rect.top;
+                        const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
 
-                    const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
-                    const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
+                        const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
+                        // const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
 
-                    // Check if there is already a dot at this location
-                    const dotIndex = dots.findIndex(dot => dot.x === gridX && dot.y === gridY);
-                    if (dotIndex !== -1) {
-                        removeDot(dotIndex); // If there is, remove it
-                    } else {
-                        placeDot(gridX, gridY); // If there isn't, add a new dot
+                        // Check if there is already a dot at this location
+                        const dotIndex = dots.findIndex(dot => dot.x === gridX && dot.y === gridY);
+                        if (dotIndex !== -1) {
+                            removeDot(dotIndex); // If there is, remove it
+                        } else {
+                            placeDot(gridX, gridY); // If there isn't, add a new dot
+                        }
                     }
-                }
-
-                lastClickTime = currentTime;
+                    clickCount = 0;
+                }, doubleClickDelay);
             });
-            // Add these lines to your JavaScript
-            const decibelIndicator = document.getElementById('decibelIndicator');
+            const decibelIndicator = document.getElementById(`decibelIndicator${canvasId}`);
             let indicatorInterval;
 
             canvas.addEventListener('mousedown', function (e) {
-                decibelIndicator.classList.add('flashing');
+    decibelIndicator.classList.add('flashing');
 
-                const rect = canvas.getBoundingClientRect();
-                const mouseY = e.clientY - rect.top;
+    const rect = canvas.getBoundingClientRect();
+    const mouseY = e.clientY - rect.top;
 
-                const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
-                const decibelIndex = gridY / gridSizeY;
-                const decibelLevel = -10 + decibelIndex * 10;
+    const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
+    const decibelIndex = gridY / (gridSizeY / 2);
+    const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
 
-                decibelIndicator.textContent = `Decibel Level: ${decibelLevel}dB`;
-        
-                indicatorInterval = setInterval(() => {
-                    const rect = canvas.getBoundingClientRect();
-                    const mouseY = e.clientY - rect.top;
+    decibelIndicator.textContent = `Decibel Level: ${decibelLevel}dB`;
 
-                    const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
-                    const decibelIndex = gridY / gridSizeY;
-                    const decibelLevel = -10 + decibelIndex * 10;
+    indicatorInterval = setInterval(() => {
+        const rect = canvas.getBoundingClientRect();
+        const mouseY = e.clientY - rect.top;
 
-                    decibelIndicator.textContent = `Decibel Level: ${decibelLevel}dB`;
-                }, 500);
-            });
+        const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
+        const decibelIndex = gridY / (gridSizeY / 2);
+        const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
 
+        decibelIndicator.textContent = `Decibel Level: ${decibelLevel}dB`;
+    }, 500);
+});
             canvas.addEventListener('mouseup', function (e) {
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
@@ -258,123 +255,129 @@ for (let i = 0; i < dots.length - 1; i++) {
 
                 // Remove the lightUp class after 100ms
                 setTimeout(() => {
-                    document.getElementById('randomButton').classList.remove('lightUp');
+                    document.getElementById(`randomButton${canvasId}`).classList.remove('lightUp');
                 }, 100);
             });
-            
-// Store the random decibel levels for each frequency
 let randomDecibelLevels = [];
-
-// Generate random decibel levels for each frequency
 function generateRandomDecibelLevels() {
     const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
     randomDecibelLevels = frequencies.map(() => {
-        // Assuming decibels range from -10 to the maximum possible value based on canvas height and gridSizeY
         const maxDecibelIndex = Math.floor(canvas.height / gridSizeY);
         const randomDecibelIndex = Math.floor(Math.random() * maxDecibelIndex);
         return -10 + randomDecibelIndex * 10; // Adjust this formula as needed
     });
 }
 
-// Modify the event listener for the randomButton to call generateRandomDecibelLevels
-document.getElementById('randomButton').addEventListener('click', function () {
+document.getElementById(`randomButton${canvasId}`).addEventListener('click', function () {
     generateRandomDecibelLevels();
     console.log("Random decibel levels generated for each frequency:", randomDecibelLevels);
     // You can add any additional actions here, such as updating the UI
 });
-
-// Modify the canvas click/touch event to check against the randomDecibelLevels
 canvas.addEventListener('mousedown', function (e) {
     const rect = canvas.getBoundingClientRect();
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
-    const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
-    const frequencyIndex = Math.floor(gridX / gridSizeX);
-    const decibelLevel = -10 + Math.floor(gridY / gridSizeY) * 10;
+    const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
+        const decibelIndex = gridY / (gridSizeY / 2);
+        const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
 
-    // Check if the clicked position matches any of the stored random decibel levels for the frequencies
-    if (randomDecibelLevels[frequencyIndex] === decibelLevel) {
-        document.getElementById('randomButton').classList.add('lightUp');
+    const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
+    // const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
+    const frequencyIndex = Math.floor(gridX / gridSizeX);
+    // const decibelLevel = -10 + Math.floor(gridY / gridSizeY) * 10;
+
+    // Generate a random number between 0 and 1
+    const randomChance = Math.random();
+
+    // Check if the decibel level matches or if the random chance is less than 0.1 (10%)
+    if (randomDecibelLevels[frequencyIndex] <= decibelLevel || randomChance < 0.1) {
+        document.getElementById(`randomButton${canvasId}`).classList.add('lightUp');
     } else {
-        document.getElementById('randomButton').classList.remove('lightUp');
+        document.getElementById(`randomButton${canvasId}`).classList.remove('lightUp');
     }
 });
 
-// Call generateRandomDecibelLevels initially to set up the initial random levels
 generateRandomDecibelLevels();
             let tempX = null; // Store the temporary X
             let flashInterval = null; // Store the interval ID
+            let holdStart; // Variable to track when the mouse was pressed down
+    let holdTimeout; // Timeout to check if the hold duration exceeds 20ms
 
-            canvas.addEventListener('mousedown', function (e) {
-                const rect = canvas.getBoundingClientRect();
-                const mouseX = e.clientX - rect.left;
-                const mouseY = e.clientY - rect.top;
+    canvas.addEventListener('mousedown', function (e) {
+        const rect = canvas.getBoundingClientRect();
+        const mouseX = e.clientX - rect.left;
+        const mouseY = e.clientY - rect.top;
 
-                const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
-                const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
+        const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
 
-                tempX = { x: gridX, y: gridY };
+        const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
+        // const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
 
-                // Start flashing
-                flashInterval = setInterval(() => {
-                    // Draw a temporary X
-                    ctx.beginPath();
-                    ctx.moveTo(gridX - 10, gridY - 10);
-                    ctx.lineTo(gridX + 10, gridY + 10);
-                    ctx.moveTo(gridX + 10, gridY - 10);
-                    ctx.lineTo(gridX - 10, gridY + 10);
-                    ctx.strokeStyle = 'red';
-                    ctx.stroke();
+        tempX = { x: gridX, y: gridY };
 
-                    // Clear the X after a delay
-                    setTimeout(() => {
-                        redrawCanvas(gridSizeX, gridSizeY);
-                    }, 200);
-                }, 500);
-            });
+        holdStart = Date.now(); // Record the time when the mouse was pressed down
 
-            canvas.addEventListener('mouseup', function (e) {
-                if (tempX) {
-                    // Stop flashing
-                    clearInterval(flashInterval);
-                    flashInterval = null;
+        // Check if the mouse is held down for more than 20ms before starting to flash
+        holdTimeout = setTimeout(() => {
+            // Start flashing
+            flashInterval = setInterval(() => {
+                // Draw a temporary X
+                ctx.beginPath();
+                ctx.moveTo(gridX - 10, gridY - 10);
+                ctx.lineTo(gridX + 10, gridY + 10);
+                ctx.moveTo(gridX + 10, gridY - 10);
+                ctx.lineTo(gridX - 10, gridY + 10);
+                ctx.strokeStyle = 'red';
+                ctx.stroke();
 
-                    // Redraw the canvas to clear the temporary X
+                // Clear the X after a delay
+                setTimeout(() => {
                     redrawCanvas(gridSizeX, gridSizeY);
-                    tempX = null;
-                }
-            });
-            document.getElementById('randomButton').click();
+                }, 100);
+            }, 300); // Adjust the flashing rate as needed
+        }, 1); // Start flashing if held down for more than 20ms
+    });
+
+    canvas.addEventListener('mouseup', function (e) {
+        if (tempX) {
+            // Stop flashing
+            clearInterval(flashInterval);
+            flashInterval = null;
+
+            // Clear the timeout if the mouse was released before 20ms
+            clearTimeout(holdTimeout);
+
+            // Redraw the canvas to clear the temporary X
+            redrawCanvas(gridSizeX, gridSizeY);
+            tempX = null;
+        }
+    });
+            document.getElementById(`randomButton${canvasId}`).click();
 let oldGridSizeX = gridSizeX; // Keep track of the old grid size
 let oldGridSizeY = gridSizeY; // Keep track of the old grid size
 
 window.addEventListener('resize', function () {
-    // Update the canvas dimensions
     canvas.width = window.innerWidth / 4;
     canvas.height = window.innerHeight * .8;
 
-    // Recalculate the grid size
-    const numSquaresX = parseInt(document.getElementById('numSquaresX').value);
-    const numSquaresY = parseInt(document.getElementById('numSquaresY').value);
+    const numSquaresX = parseInt(document.getElementById(`numSquaresX${canvsId}`).value);
+    const numSquaresY = parseInt(document.getElementById(`numSquaresY${canvsId}`).value);
     gridSizeX = canvas.width / numSquaresX;
     gridSizeY = canvas.height / numSquaresY;
 
-    // Update the dot positions based on the new grid size
     dots.forEach((dot, index) => {
         dot.x = Math.round(dot.x / oldGridSizeX) * gridSizeX;
         dot.y = Math.round(dot.y / oldGridSizeY) * gridSizeY;
     });
     
-    // Redraw the canvas with the updated dot positions
     redrawCanvas(gridSizeX, gridSizeY);
     updateGrid();
 
-    // Update the old grid sizes for the next resize event
     oldGridSizeX = gridSizeX;
     oldGridSizeY = gridSizeY;
 });
+            }
         </script>
     </body>
 
