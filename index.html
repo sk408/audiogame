@@ -2,7 +2,7 @@
 <html>
 
 <head>
-    <title>Grid Line Intersections Game</title>
+    <title>Audiogram Game</title>
     <style>
         body {
             display: flex;
@@ -64,11 +64,6 @@
         <button id="decibelIndicator1">Decibel Level: N/A</button>
         <button id="randomButton1">Response</button>
         <br>
-        <button id="redButton1" style="display:  none;">Red</button>
-        <button id="blueButton1" style="display:  none;">Blue</button>
-        <br>
-        <input type="number" id="numSquaresX1" value="12" min="1" style="display:  none;">
-        <input type="number" id="numSquaresY1" value="13" min="1" style="display: none;">
         <button onclick="updateGrid('1')" style="display: none;">Update Grid</button>
     </div>
     <div class="canvas-container">
@@ -77,26 +72,20 @@
         <div id="scoreDisplay2">Score: 0</div>
         <button id="decibelIndicator2">Decibel Level: N/A</button>
         <button id="randomButton2">Response</button> <br>
-        <button id="redButton2" style="display:  none;">Red</button>
-        <button id="blueButton2" style="display:  none;">Blue</button>
-        <br>
-        <input type="number" id="numSquaresX2" value="12" min="1" style="display:none;">
-        <input type="number" id="numSquaresY2" value="13" min="1" style="display:none;">
+
         <button onclick="updateGrid('2')" style="display:none;">Update Grid</button>
     </div>
     <script>
-        includeCanvasLogic(1, "#00f");
-        includeCanvasLogic(2, "#f00");
-        function includeCanvasLogic(canvasId, color) {
+        includeCanvasLogic(1, "#00f", 12, 13);
+        includeCanvasLogic(2, "#f00", 12, 13);
+        function includeCanvasLogic(canvasId, color, numSquaresX, numSquaresY) {
             console.log("Canvas logic included for canvas ID:", canvasId);
-
             const canvas = document.getElementById(`gridCanvas${canvasId}`);
             const ctx = canvas.getContext('2d');
 
-            const dotRadius = 5;
+            const dotRadius = 8;
             let dots = []; // Array to store the dots
-            let gridSizeX = 50;
-            let gridSizeY = 50;
+            let gridSizeX, gridSizeY;
             canvas.width = window.innerWidth / 4;
             canvas.height = window.innerHeight * .8;
             function redrawCanvas(gridSizeX, gridSizeY) {
@@ -148,16 +137,7 @@
                 ctx.fillStyle = dotColor; // Use the current dot color
                 ctx.fill();
             }
-            document.getElementById(`redButton${canvasId}`).addEventListener('click', function () {
-                dotColor = "#f00"; // Change dot color to red
-                redrawCanvas();
-                updateGrid(); // Redraw the canvas
-            });
-            document.getElementById(`blueButton${canvasId}`).addEventListener('click', function () {
-                dotColor = "#00f"; // Change dot color to blue
-                redrawCanvas();
-                updateGrid(); // Redraw the canvas
-            });
+
             let score = 0; // Initialize the score
 
             function placeDot(x, y) {
@@ -184,19 +164,26 @@
                 updateGrid(); // Redraw the canvas
             }
             function updateGrid() {
-                const numSquaresX = parseInt(document.getElementById(`numSquaresX${canvasId}`).value);
-                const numSquaresY = parseInt(document.getElementById(`numSquaresY${canvasId}`).value);
                 gridSizeX = canvas.width / numSquaresX;
                 gridSizeY = canvas.height / numSquaresY;
                 redrawCanvas(gridSizeX, gridSizeY);
             }
             let lastClickTime = 0;
-            const doubleClickDelay = 500; // Time in milliseconds
+            const doubleClickDelay = 200; // Time in milliseconds
 
             let clickCount = 0;
+            let lastX, lastY;
 
             canvas.addEventListener('click', function (e) {
                 clickCount++;
+                const rect = canvas.getBoundingClientRect();
+
+                const mouseX = e.clientX - rect.left;
+                        const mouseY = e.clientY - rect.top;
+
+                lastY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2);
+                lastX = Math.round(mouseX / gridSizeX) * gridSizeX;
+
                 setTimeout(() => {
                     if (clickCount >= 2) {
                         // Double click detected
@@ -321,9 +308,7 @@
                 const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
 
                 const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
-                // const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
                 const frequencyIndex = Math.floor(gridX / gridSizeX);
-                // const decibelLevel = -10 + Math.floor(gridY / gridSizeY) * 10;
 
                 // Generate a random number between 0 and 1
                 const randomChance = Math.random();
@@ -395,6 +380,11 @@
                 oscillator.connect(gainNode);
                 gainNode.connect(audioCtx.destination);
 
+                // Start playing the sound immediately on mouse down
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Start beep
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.2); // Stop beep after 100ms
+
                 beepInterval = setInterval(() => {
                     oscillator = audioCtx.createOscillator(); // Recreate the oscillator for each beep
                     oscillator.type = 'sine';
@@ -406,7 +396,6 @@
                     oscillator.stop(audioCtx.currentTime + 0.2); // Stop beep after 100ms
                 }, 650); // Beep every half second
             });
-
             canvas.addEventListener('mouseup', function (e) {
                 clearInterval(beepInterval); // Stop the beeping
                 if (oscillator) {
@@ -435,8 +424,6 @@
                 canvas.width = window.innerWidth / 4;
                 canvas.height = window.innerHeight * .8;
 
-                const numSquaresX = parseInt(document.getElementById(`numSquaresX${canvasId}`).value);
-                const numSquaresY = parseInt(document.getElementById(`numSquaresY${canvasId}`).value);
                 gridSizeX = canvas.width / numSquaresX;
                 gridSizeY = canvas.height / numSquaresY;
 
@@ -451,9 +438,17 @@
                 oldGridSizeX = gridSizeX;
                 oldGridSizeY = gridSizeY;
             });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 's') {
+                // Assuming placeDot function exists and takes x, y coordinates
+                // and lastFrequencyIndex and lastDecibelLevel are stored globally
+                const x = lastX;
+                const y = lastY;
+                placeDot(x, y);
+            }
+        });
         }
-        // function includeCanvasLogic(e,t){console.log("Canvas logic included for canvas ID:",e);let n=document.getElementById(`gridCanvas${e}`),l=n.getContext("2d"),o=[],$=50,i=50;function d(e,$){l.clearRect(0,0,n.width,n.height);let i=[0,125,250,500,750,1e3,1500,2e3,3e3,4e3,6e3,8e3],d=Array.from({length:n.height/$+1},(e,t)=>-10+10*t),r=Array.from({length:n.height/($/2)+1},(e,t)=>-10+5*t);l.fillStyle=t;for(let u=0;u<=i.length;u++){let a=u*e;l.moveTo(a,0),l.lineTo(a,n.height),l.fillText(i[u]+"hz",a+5,15)}for(let s=0;s<=d.length;s++){let f=s*$;l.moveTo(0,f),l.lineTo(n.width,f),l.fillText(d[s]+"dB",5,f-5)}for(let m=0;m<=r.length;m++){let g=m*($/2);l.fillText(r[m]+"dB",5,g-5)}for(let h of(l.strokeStyle="#ddd",l.stroke(),o))c(h.x,h.y);o.sort((e,t)=>e.x-t.x);for(let _=0;_<o.length-1;_++)l.beginPath(),l.moveTo(o[_].x,o[_].y),l.lineTo(o[_+1].x,o[_+1].y),l.strokeStyle="#000",l.stroke()}n.width=window.innerWidth/4,n.height=.8*window.innerHeight;let r=t;function c(e,t){l.beginPath(),l.arc(e,t,5,0,2*Math.PI),l.fillStyle=r,l.fill()}d(),a(),document.getElementById(`redButton${e}`).addEventListener("click",function(){r="#f00",d(),a()}),document.getElementById(`blueButton${e}`).addEventListener("click",function(){r="#00f",d(),a()});let u=0;function a(){let t=parseInt(document.getElementById(`numSquaresX${e}`).value),l=parseInt(document.getElementById(`numSquaresY${e}`).value);d($=n.width/t,i=n.height/l)}let s=0;n.addEventListener("click",function(t){s++,setTimeout(()=>{if(s>=2){let l=n.getBoundingClientRect(),r=t.clientX-l.left,c=t.clientY-l.top,f=Math.round(c/(i/2))*(i/2),m=Math.round(r/$)*$,h=o.findIndex(e=>e.x===m&&e.y===f);if(-1!==h){var _;_=h,o.splice(_,1),d(),a()}else!function t(n,l){(o=o.filter(e=>e.x!==n)).push({x:n,y:l}),d(),a();let r=Math.floor(n/$),c=-10+5*Math.floor(l/(i/2));g[r]===c?u+=1e3:u-=5e3,document.getElementById(`scoreDisplay${e}`).textContent=`Score: ${u}`}(m,f)}s=0},500)});let f=document.getElementById(`decibelIndicator${e}`),m;n.addEventListener("mousedown",function(e){f.classList.add("flashing");let t=n.getBoundingClientRect(),l=e.clientY-t.top,o=Math.round(l/(i/2))*(i/2),$=o/(i/2);f.textContent=`Decibel Level: ${-10+5*$}dB`,m=setInterval(()=>{let t=n.getBoundingClientRect(),l=e.clientY-t.top,o=Math.round(l/(i/2))*(i/2),$=o/(i/2);f.textContent=`Decibel Level: ${-10+5*$}dB`},500)}),n.addEventListener("mouseup",function(t){let l=n.getBoundingClientRect(),o=t.clientX-l.left,$=t.clientY-l.top;o>=0&&o<=n.width&&$>=0&&$<=n.height&&(f.classList.remove("flashing"),clearInterval(m)),setTimeout(()=>{document.getElementById(`randomButton${e}`).classList.remove("lightUp")},100)});let g=[];function h(){g=[0,125,250,500,750,1e3,1500,2e3,3e3,4e3,6e3,8e3].map(e=>{let t=Math.random(),n,l=null;if(!(e<=2e3))return t<.35?5+5*Math.floor(8*Math.random()):t<.7?40+5*Math.floor(5*Math.random()):t<.93?60+5*Math.floor(5*Math.random()):80+5*Math.floor(8*Math.random());if(null===l||Math.random()>=.6){let o=Math.random();n=o<.55?5+5*Math.floor(8*Math.random()):o<.85?40+5*Math.floor(5*Math.random()):o<.95?60+5*Math.floor(5*Math.random()):80+5*Math.floor(8*Math.random())}else n=Math.max(5,Math.min(115,n=l+(Math.floor(7*Math.random())-3)*5));return l=n,n})}document.getElementById(`randomButton${e}`).addEventListener("click",function(){h(),console.log("Random decibel levels generated for each frequency:",g)}),n.addEventListener("mousedown",function(t){let l=n.getBoundingClientRect(),o=t.clientX-l.left,d=t.clientY-l.top,r=Math.round(d/(i/2))*(i/2),c=r/(i/2),u=Math.round(o/$)*$,a=Math.floor(u/$);g[a]<=-10+5*c||.1>Math.random()?document.getElementById(`randomButton${e}`).classList.add("lightUp"):document.getElementById(`randomButton${e}`).classList.remove("lightUp")}),h();let _=null,v=null,y,B;n.addEventListener("mousedown",function(e){let t=n.getBoundingClientRect(),o=e.clientX-t.left,r=e.clientY-t.top,c=Math.round(r/(i/2))*(i/2),u=Math.round(o/$)*$;_={x:u,y:c},y=Date.now(),B=setTimeout(()=>{v=setInterval(()=>{l.beginPath(),l.moveTo(u-10,c-10),l.lineTo(u+10,c+10),l.moveTo(u+10,c-10),l.lineTo(u-10,c+10),l.strokeStyle="red",l.stroke(),setTimeout(()=>{d($,i)},100)},300)},1)});let E=new(window.AudioContext||window.webkitAudioContext),L,x,T;n.addEventListener("mousedown",function(e){let t=n.getBoundingClientRect(),l=e.clientX-t.left,o=Math.round(l/$),i=[0,125,250,500,750,1e3,1500,2e3,3e3,4e3,6e3,8e3][o]||440;console.log("Frequency:",i),L=E.createOscillator(),x=E.createGain(),L.type="sine",L.frequency.setValueAtTime(i,E.currentTime),L.connect(x),x.connect(E.destination),T=setInterval(()=>{(L=E.createOscillator()).type="sine",L.frequency.setValueAtTime(i,E.currentTime),L.connect(x),x.gain.setValueAtTime(.1,E.currentTime),L.start(E.currentTime),L.stop(E.currentTime+.2)},650)}),n.addEventListener("mouseup",function(e){clearInterval(T),L&&L.disconnect()}),n.addEventListener("mouseup",function(e){_&&(clearInterval(v),v=null,clearTimeout(B),d($,i),_=null)}),document.getElementById(`randomButton${e}`).click();let p=$,C=i;window.addEventListener("resize",function(){n.width=window.innerWidth/4,n.height=.8*window.innerHeight;let t=parseInt(document.getElementById(`numSquaresX${e}`).value),l=parseInt(document.getElementById(`numSquaresY${e}`).value);$=n.width/t,i=n.height/l,o.forEach((e,t)=>{e.x=Math.round(e.x/p)*$,e.y=Math.round(e.y/C)*i}),d($,i),a(),p=$,C=i})}includeCanvasLogic(1,"#00f"),includeCanvasLogic(2,"#f00");
-    </script>
+        </script>
 </body>
 
 </html>
