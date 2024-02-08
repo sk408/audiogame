@@ -710,6 +710,22 @@ document.addEventListener('keydown', function (event) {
         // Create oscillator and gain node
         if(activated)return;
         activated=1;
+                        const gridY = lastY; // Updated for 5db increments
+                const decibelIndex = gridY / (gridSizeY / 2);
+                const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
+
+                const gridX = lastX;
+                const frequencyIndex = Math.floor(gridX / gridSizeX);
+
+                // Generate a random number between 0 and 1
+                const randomChance = Math.random();
+
+                // Check if the decibel level matches or if the random chance is less than 0.1 (10%)
+                if (randomDecibelLevels[frequencyIndex] <= decibelLevel || randomChance < 0.1) {
+                    document.getElementById(`randomButton${canvasId}`).classList.add('lightUp');
+                } else {
+                    document.getElementById(`randomButton${canvasId}`).classList.remove('lightUp');
+                }
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
 
