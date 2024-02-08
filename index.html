@@ -709,6 +709,7 @@ document.addEventListener('keydown', function (event) {
     if (event.key === ' ') { // Check if the pressed key is the spacebar
         // Create oscillator and gain node
         if(activated)return;
+        activated=1;
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
 
