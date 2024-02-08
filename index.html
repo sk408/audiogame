@@ -92,8 +92,15 @@
             const dotRadius = 8;
             let dots = []; // Array to store the dots
             let gridSizeX, gridSizeY;
-            canvas.width = window.innerWidth / 4;
-            canvas.height = window.innerHeight * .8;
+            if (window.innerWidth <= 600) {
+                // For mobile devices
+                canvas.width = window.innerWidth / 2;
+                canvas.height = window.innerHeight * 0.475; // Adjusted to leave 5% for buttons
+            } else {
+                // For desktop
+                canvas.width = window.innerWidth / 4;
+                canvas.height = window.innerHeight * 0.8;
+            }
             function redrawCanvas(gridSizeX, gridSizeY) {
                 ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
 
