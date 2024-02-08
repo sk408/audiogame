@@ -465,7 +465,48 @@ document.addEventListener('click', function(e) {
                 const y = lastY;
                 placeDot(x, y, lastCanvas);
             }
-        });
+                });
+            
+// // Add event listener for spacebar keydown
+// document.addEventListener('keydown', function (event) {
+//     if (event.key === ' ') { // Check if the pressed key is the spacebar
+//         // Create oscillator and gain node
+//         oscillator = audioCtx.createOscillator();
+//         gainNode = audioCtx.createGain();
+
+//         // Set oscillator properties
+//         oscillator.type = 'sine';
+//         oscillator.frequency.setValueAtTime(getFrequency(), audioCtx.currentTime);
+//         oscillator.connect(gainNode);
+//         gainNode.connect(audioCtx.destination);
+
+//         // Start playing the sound
+//         gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+//         oscillator.start();
+
+//         // Continuously play the sound
+//         beepInterval = setInterval(() => {
+//             oscillator.frequency.setValueAtTime(getFrequency(), audioCtx.currentTime);
+//             oscillator.start();
+//         }, 650); // Beep every half second
+//     }
+// });
+
+// // Add event listener for spacebar keyup
+// document.addEventListener('keyup', function (event) {
+//     if (event.key === ' ') { // Check if the released key is the spacebar
+//         // Stop playing the sound
+//         clearInterval(beepInterval);
+//         oscillator.stop();
+//     }
+// });
+
+// // Function to get frequency based on lastX (replace with your logic)
+// function getFrequency() {
+//     const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
+//     const frequencyIndex = Math.round(lastX / gridSizeX);
+//     return frequencies[frequencyIndex] || 440; // Default to A4 if out of bounds
+// }
         }
         </script>
 </body>
