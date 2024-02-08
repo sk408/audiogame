@@ -144,7 +144,7 @@ document.addEventListener('contextmenu', function (event) {
                 for (let i = 0; i <= decibelsHalf.length; i++) {
                     const y = i * (gridSizeY / 2);
                     // Don't draw the grid line, just the label
-                    ctx.fillText(decibelsHalf[i] + "dB" || '', 5, y - 5); // Draw the decibel label
+                    // ctx.fillText(decibelsHalf[i] + "dB" || '', 5, y - 5); // Draw the decibel label
                 }
                 ctx.strokeStyle = "#ddd";
                 ctx.stroke();
