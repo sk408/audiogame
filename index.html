@@ -308,7 +308,7 @@ document.addEventListener('touchstart', function(e) {
                 const decibelIndex = gridY / (gridSizeY / 2);
                 const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
             
-                decibelIndicator.textContent = `Decibel Level: dB`;
+                decibelIndicator.textContent = `Decibel Level: ${decibelLevel}dB`;
             
                 indicatorInterval = setInterval(() => {
                     const rect = canvas.getBoundingClientRect();
@@ -319,7 +319,7 @@ document.addEventListener('touchstart', function(e) {
                     const decibelIndex = gridY / (gridSizeY / 2);
                     const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
             
-                    decibelIndicator.textContent = `Decibel Level: dB`;
+                    decibelIndicator.textContent = `Decibel Level: ${decibelLevel}dB`;
                 }, 500);
             });
             canvas.addEventListener('mouseup', function (e) {
