@@ -95,6 +95,9 @@
 document.addEventListener('touchstart', function (event) {
     event.preventDefault();
 });
+                document.addEventListener('contextmenu', function (event) {
+            event.preventDefault();
+        });
         function includeCanvasLogic(canvasId, color, numSquaresX, numSquaresY) {
             console.log("Canvas logic included for canvas ID:", canvasId);
             const canvas = document.getElementById(`gridCanvas${canvasId}`);
