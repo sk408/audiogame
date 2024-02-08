@@ -257,10 +257,10 @@ document.addEventListener('click', function(e) {
                 const mouseY = e.clientY - rect.top;
 
                 // Check if the mouse is still over the canvas
-                if (mouseX >= 0 && mouseX <= canvas.width && mouseY >= 0 && mouseY <= canvas.height) {
+                // if (mouseX >= 0 && mouseX <= canvas.width && mouseY >= 0 && mouseY <= canvas.height) {
                     decibelIndicator.classList.remove('flashing');
                     clearInterval(indicatorInterval);
-                }
+                // }
 
                 // Remove the lightUp class after 100ms
                 setTimeout(() => {
