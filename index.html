@@ -6,6 +6,10 @@
 
     <title>Audiogram Game by Stephen Kanney</title>
     <style>
+        .canvas-container {
+            margin: 0 20px; /* Adjust the spacing between canvases */
+        }
+
         body {
             display: flex;
             flex-direction: row;
@@ -61,7 +65,7 @@
         }
     }
     body {
-                    -webkit-user-select: none;
+            -webkit-user-select: none;
             -webkit-touch-callout: none;
             user-select: none;
 
@@ -96,7 +100,7 @@
 document.addEventListener('touchstart', function (event) {
     event.preventDefault();
 });
-                document.addEventListener('contextmenu', function (event) {
+document.addEventListener('contextmenu', function (event) {
             event.preventDefault();
         });
         function includeCanvasLogic(canvasId, color, numSquaresX, numSquaresY) {
@@ -386,15 +390,20 @@ canvas.addEventListener('touchend', function (e) {
             let randomDecibelLevels = [];
             function generateRandomDecibelLevels() {
                 const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
+                let previousDecibelValue = null;
                 randomDecibelLevels = frequencies.map((frequency) => {
-                    const randomValue = Math.random();
                     let decibelValue;
-                    let previousDecibelValue = null;
                     if (frequency <= 2000) {
-                        if (previousDecibelValue === null || Math.random() >= 0.72) {
+                        if (previousDecibelValue !== null) {
+                            // With 60% chance, generate a value within +/- 15 dB of the previous value
+                            decibelValue = previousDecibelValue + (Math.floor(Math.random() * 7) - 3) * 5; // -15 to +15 dB in steps of 5
+                            // Ensure decibelValue is within the allowed range
+                            decibelValue = Math.max(5, Math.min(115, decibelValue));
+                        }
+                        if (decibelValue === undefined || Math.random() >= 0.72) {
                             // Generate a completely random value if it's the first value or with 40% chance
                             const randomValue = Math.random();
-                             if (randomValue < 0.75) { // 60% chance for 5 to 40
+                            if (randomValue < 0.75) { // 60% chance for 5 to 40
                                 decibelValue = 5 + Math.floor(Math.random() * ((40 - 5) / 5 + 1)) * 5;
                             } else if (randomValue < 0.88) { // 30% chance for 40 to 60
                                 decibelValue = 40 + Math.floor(Math.random() * ((60 - 40) / 5 + 1)) * 5;
@@ -403,17 +412,9 @@ canvas.addEventListener('touchend', function (e) {
                             } else { // 5% chance for 80 to 115
                                 decibelValue = 80 + Math.floor(Math.random() * ((115 - 80) / 5 + 1)) * 5;
                             }
-                        } else {
-                            // With 60% chance, generate a value within +/- 15 dB of the previous value
-                            decibelValue = previousDecibelValue + (Math.floor(Math.random() * 7) - 3) * 5; // -15 to +15 dB in steps of 5
-                            // Ensure decibelValue is within the allowed range
-                            decibelValue = Math.max(5, Math.min(115, decibelValue));
                         }
-                        previousDecibelValue = decibelValue;
-                        return decibelValue;
-
-                    }
-                    else {
+                    } else {
+                        const randomValue = Math.random();
                         if (randomValue < 0.35) { // 60% chance for 5 to 40
                             decibelValue = 5 + Math.floor(Math.random() * ((40 - 5) / 5 + 1)) * 5;
                         } else if (randomValue < 0.70) { // 30% chance for 40 to 60
@@ -423,11 +424,11 @@ canvas.addEventListener('touchend', function (e) {
                         } else { // 5% chance for 80 to 115
                             decibelValue = 80 + Math.floor(Math.random() * ((115 - 80) / 5 + 1)) * 5;
                         }
-                        return decibelValue;
                     }
+                    previousDecibelValue = decibelValue;
+                    return decibelValue;
                 });
             }
-
             document.getElementById(`randomButton${canvasId}`).addEventListener('click', function () {
                 generateRandomDecibelLevels();
                 console.log("Random decibel levels generated for each frequency:", randomDecibelLevels);
@@ -593,50 +594,54 @@ canvas.addEventListener('touchstart', function (e) {
                     oscillator.stop(audioCtx.currentTime + 0.2); // Stop beep after 100ms
                 }, 650); // Beep every half second
             });
-            canvas.addEventListener('touchstart', function (e) {
-                const rect = canvas.getBoundingClientRect();
-                const touch = e.touches[0];
-                const mouseX = touch.clientX - rect.left;
-                const frequencyIndex = Math.round(mouseX / gridSizeX);
-                const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
-                const frequency = frequencies[frequencyIndex] || 440; // Default to A4 if out of bounds
-                console.log("Frequency:", frequency);
-                oscillator = audioCtx.createOscillator();
-                gainNode = audioCtx.createGain();
+canvas.addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const mouseX = touch.clientX - rect.left;
+    const frequencyIndex = Math.round(mouseX / gridSizeX);
+    const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
+    const frequency = frequencies[frequencyIndex] || 440;
+    oscillator = audioCtx.createOscillator();
+    gainNode = audioCtx.createGain();
 
-                oscillator.type = 'sine';
-                oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-                oscillator.connect(gainNode);
-                gainNode.connect(audioCtx.destination);
+    oscillator.type = 'sine';
+    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+    oscillator.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
 
-                // Start playing the sound immediately on mouse down
-                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Start beep
-                oscillator.start(audioCtx.currentTime);
-                oscillator.stop(audioCtx.currentTime + 0.2); // Stop beep after 100ms
+    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+    oscillator.start();
 
-                beepInterval = setInterval(() => {
-                    oscillator = audioCtx.createOscillator(); // Recreate the oscillator for each beep
-                    oscillator.type = 'sine';
-                    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
-                    oscillator.connect(gainNode);
+    if (!beepInterval) {
+        beepInterval = setInterval(() => {
+            oscillator.stop();
+            oscillator = audioCtx.createOscillator();
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+            oscillator.connect(gainNode);
+            gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            oscillator.start();
+            oscillator.stop(audioCtx.currentTime + 0.2);
+        }, 650);
+    }
+});
 
-                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Start beep
-                    oscillator.start(audioCtx.currentTime);
-                    oscillator.stop(audioCtx.currentTime + 0.2); // Stop beep after 100ms
-                }, 650); // Beep every half second
-            });
+canvas.addEventListener('touchend', function(e) {
+    clearInterval(beepInterval);
+    beepInterval = null;
+    if (oscillator) {
+        oscillator.stop();
+        oscillator.disconnect();
+    }
+});
             canvas.addEventListener('mouseup', function (e) {
                 clearInterval(beepInterval); // Stop the beeping
                 if (oscillator) {
                     oscillator.disconnect();
                 }
             });
-            canvas.addEventListener('touchend', function (e) {
-                clearInterval(beepInterval); // Stop the beeping
-                if (oscillator) {
-                    oscillator.disconnect();
-                }
-            });
+ 
             canvas.addEventListener('mouseup', function (e) {
                 if (tempX) {
                     // Stop flashing
