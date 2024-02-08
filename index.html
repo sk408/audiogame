@@ -703,10 +703,12 @@ canvas.addEventListener('touchend', function(e) {
                 placeDot(x, y);
             }
         });
+            let activated;
 // Add event listener for spacebar keydown
 document.addEventListener('keydown', function (event) {
     if (event.key === ' ') { // Check if the pressed key is the spacebar
         // Create oscillator and gain node
+        if(activated)return;
         oscillator = audioCtx.createOscillator();
         gainNode = audioCtx.createGain();
 
@@ -732,6 +734,7 @@ document.addEventListener('keydown', function (event) {
 document.addEventListener('keyup', function (event) {
     if (event.key === ' ') { // Check if the released key is the spacebar
         // Stop playing the sound
+        activated = 0;
         clearInterval(beepInterval);
         oscillator.stop();
     }
