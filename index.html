@@ -209,6 +209,41 @@
                     clickCount = 0;
                 }, doubleClickDelay);
             });
+            canvas.addEventListener('touchstart', function (e) {
+                clickCount++;
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0]; // Get the first touch
+            
+                const mouseX = touch.clientX - rect.left;
+                const mouseY = touch.clientY - rect.top;
+            
+                lastY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2);
+                lastX = Math.round(mouseX / gridSizeX) * gridSizeX;
+            
+                setTimeout(() => {
+                    if (clickCount >= 2) {
+                        // Double touch detected
+                        const rect = canvas.getBoundingClientRect();
+                        const touch = e.touches[0]; // Get the first touch again for updated position
+            
+                        const mouseX = touch.clientX - rect.left;
+                        const mouseY = touch.clientY - rect.top;
+            
+                        const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
+            
+                        const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
+            
+                        // Check if there is already a dot at this location
+                        const dotIndex = dots.findIndex(dot => dot.x === gridX && dot.y === gridY);
+                        if (dotIndex !== -1) {
+                            removeDot(dotIndex); // If there is, remove it
+                        } else {
+                            placeDot(gridX, gridY, canvasId); // If there isn't, add a new dot
+                        }
+                    }
+                    clickCount = 0;
+                }, doubleClickDelay);
+            });
             const decibelIndicator = document.getElementById(`decibelIndicator${canvasId}`);
             let indicatorInterval;
             let lastCanvas;
@@ -219,6 +254,21 @@ document.addEventListener('click', function(e) {
     const rect2 = canvas2.getBoundingClientRect();
     const x = e.clientX;
     const y = e.clientY;
+
+    if (x >= rect1.left && x <= rect1.right && y >= rect1.top && y <= rect1.bottom) {
+        lastCanvas = 1;
+    } else if (x >= rect2.left && x <= rect2.right && y >= rect2.top && y <= rect2.bottom) {
+        lastCanvas = 2;
+    }
+});
+document.addEventListener('touchstart', function(e) {
+    const canvas1 = document.getElementById('gridCanvas1');
+    const canvas2 = document.getElementById('gridCanvas2');
+    const rect1 = canvas1.getBoundingClientRect();
+    const rect2 = canvas2.getBoundingClientRect();
+    const touch = e.touches[0];
+    const x = touch.clientX;
+    const y = touch.clientY;
 
     if (x >= rect1.left && x <= rect1.right && y >= rect1.top && y <= rect1.bottom) {
         lastCanvas = 1;
@@ -248,22 +298,63 @@ document.addEventListener('click', function(e) {
                     decibelIndicator.textContent = `Decibel Level: ${decibelLevel}dB`;
                 }, 500);
             });
+            canvas.addEventListener('touchstart', function (e) {
+                decibelIndicator.classList.add('flashing');
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const mouseY = touch.clientY - rect.top;
+            
+                const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
+                const decibelIndex = gridY / (gridSizeY / 2);
+                const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
+            
+                decibelIndicator.textContent = `Decibel Level: dB`;
+            
+                indicatorInterval = setInterval(() => {
+                    const rect = canvas.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    const mouseY = touch.clientY - rect.top;
+            
+                    const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
+                    const decibelIndex = gridY / (gridSizeY / 2);
+                    const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
+            
+                    decibelIndicator.textContent = `Decibel Level: dB`;
+                }, 500);
+            });
             canvas.addEventListener('mouseup', function (e) {
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
 
                 // Check if the mouse is still over the canvas
-                if (mouseX >= 0 && mouseX <= canvas.width && mouseY >= 0 && mouseY <= canvas.height) {
+                    // if (mouseX >= 0 && mouseX <= canvas.width && mouseY >= 0 && mouseY <= canvas.height) {
                     decibelIndicator.classList.remove('flashing');
                     clearInterval(indicatorInterval);
-                }
-
-                // Remove the lightUp class after 100ms
-                setTimeout(() => {
+                // }
+                                // Remove the lightUp class after 100ms
+                                setTimeout(() => {
                     document.getElementById(`randomButton${canvasId}`).classList.remove('lightUp');
                 }, 100);
             });
+canvas.addEventListener('touchend', function (e) {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.changedTouches[0];
+    const touchX = touch.clientX - rect.left;
+    const touchY = touch.clientY - rect.top;
+
+    // Check if the touch is still over the canvas
+    // if (touchX >= 0 && touchX <= canvas.width && touchY >= 0 && touchY <= canvas.height) {
+        decibelIndicator.classList.remove('flashing');
+        clearInterval(indicatorInterval);
+    // }
+
+    // Remove the lightUp class after 100ms
+    setTimeout(() => {
+        document.getElementById(`randomButton`).classList.remove('lightUp');
+    }, 100);
+});
+
             let randomDecibelLevels = [];
             function generateRandomDecibelLevels() {
                 const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
@@ -314,6 +405,11 @@ document.addEventListener('click', function(e) {
                 console.log("Random decibel levels generated for each frequency:", randomDecibelLevels);
                 // You can add any additional actions here, such as updating the UI
             });
+            document.getElementById(`randomButton${canvasId}`).addEventListener('touchend', function () {
+                generateRandomDecibelLevels();
+                console.log("Random decibel levels generated for each frequency:", randomDecibelLevels);
+                // You can add any additional actions here, such as updating the UI
+            });
             canvas.addEventListener('mousedown', function (e) {
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
@@ -336,7 +432,29 @@ document.addEventListener('click', function(e) {
                     document.getElementById(`randomButton${canvasId}`).classList.remove('lightUp');
                 }
             });
+canvas.addEventListener('touchstart', function (e) {
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    const mouseX = touch.clientX - rect.left;
+    const mouseY = touch.clientY - rect.top;
 
+    const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
+    const decibelIndex = gridY / (gridSizeY / 2);
+    const decibelLevel = -10 + decibelIndex * 5; // Updated for 5db increments
+
+    const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
+    const frequencyIndex = Math.floor(gridX / gridSizeX);
+
+    // Generate a random number between 0 and 1
+    const randomChance = Math.random();
+
+    // Check if the decibel level matches or if the random chance is less than 0.1 (10%)
+    if (randomDecibelLevels[frequencyIndex] <= decibelLevel || randomChance < 0.1) {
+        document.getElementById(`randomButton${canvasId}`).classList.add('lightUp');
+    } else {
+        document.getElementById(`randomButton${canvasId}`).classList.remove('lightUp');
+    }
+});
             generateRandomDecibelLevels();
             let tempX = null; // Store the temporary X
             let flashInterval = null; // Store the interval ID
@@ -347,6 +465,41 @@ document.addEventListener('click', function(e) {
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = e.clientX - rect.left;
                 const mouseY = e.clientY - rect.top;
+
+                const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
+
+                const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
+                // const gridY = Math.round(mouseY / gridSizeY) * gridSizeY;
+
+                tempX = { x: gridX, y: gridY };
+
+                holdStart = Date.now(); // Record the time when the mouse was pressed down
+
+                // Check if the mouse is held down for more than 20ms before starting to flash
+                holdTimeout = setTimeout(() => {
+                    // Start flashing
+                    flashInterval = setInterval(() => {
+                        // Draw a temporary X
+                        ctx.beginPath();
+                        ctx.moveTo(gridX - 10, gridY - 10);
+                        ctx.lineTo(gridX + 10, gridY + 10);
+                        ctx.moveTo(gridX + 10, gridY - 10);
+                        ctx.lineTo(gridX - 10, gridY + 10);
+                        ctx.strokeStyle = 'red';
+                        ctx.stroke();
+
+                        // Clear the X after a delay
+                        setTimeout(() => {
+                            redrawCanvas(gridSizeX, gridSizeY);
+                        }, 100);
+                    }, 300); // Adjust the flashing rate as needed
+                }, 1); // Start flashing if held down for more than 20ms
+            });
+            canvas.addEventListener('touchstart', function (e) {
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const mouseX = touch.clientX - rect.left;
+                const mouseY = touch.clientY - rect.top;
 
                 const gridY = Math.round(mouseY / (gridSizeY / 2)) * (gridSizeY / 2); // Updated for 5db increments
 
@@ -412,13 +565,65 @@ document.addEventListener('click', function(e) {
                     oscillator.stop(audioCtx.currentTime + 0.2); // Stop beep after 100ms
                 }, 650); // Beep every half second
             });
+            canvas.addEventListener('touchstart', function (e) {
+                const rect = canvas.getBoundingClientRect();
+                const touch = e.touches[0];
+                const mouseX = touch.clientX - rect.left;
+                const frequencyIndex = Math.round(mouseX / gridSizeX);
+                const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
+                const frequency = frequencies[frequencyIndex] || 440; // Default to A4 if out of bounds
+                console.log("Frequency:", frequency);
+                oscillator = audioCtx.createOscillator();
+                gainNode = audioCtx.createGain();
+
+                oscillator.type = 'sine';
+                oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+                oscillator.connect(gainNode);
+                gainNode.connect(audioCtx.destination);
+
+                // Start playing the sound immediately on mouse down
+                gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Start beep
+                oscillator.start(audioCtx.currentTime);
+                oscillator.stop(audioCtx.currentTime + 0.2); // Stop beep after 100ms
+
+                beepInterval = setInterval(() => {
+                    oscillator = audioCtx.createOscillator(); // Recreate the oscillator for each beep
+                    oscillator.type = 'sine';
+                    oscillator.frequency.setValueAtTime(frequency, audioCtx.currentTime);
+                    oscillator.connect(gainNode);
+
+                    gainNode.gain.setValueAtTime(0.1, audioCtx.currentTime); // Start beep
+                    oscillator.start(audioCtx.currentTime);
+                    oscillator.stop(audioCtx.currentTime + 0.2); // Stop beep after 100ms
+                }, 650); // Beep every half second
+            });
             canvas.addEventListener('mouseup', function (e) {
                 clearInterval(beepInterval); // Stop the beeping
                 if (oscillator) {
                     oscillator.disconnect();
                 }
             });
+            canvas.addEventListener('touchend', function (e) {
+                clearInterval(beepInterval); // Stop the beeping
+                if (oscillator) {
+                    oscillator.disconnect();
+                }
+            });
             canvas.addEventListener('mouseup', function (e) {
+                if (tempX) {
+                    // Stop flashing
+                    clearInterval(flashInterval);
+                    flashInterval = null;
+
+                    // Clear the timeout if the mouse was released before 20ms
+                    clearTimeout(holdTimeout);
+
+                    // Redraw the canvas to clear the temporary X
+                    redrawCanvas(gridSizeX, gridSizeY);
+                    tempX = null;
+                }
+            });
+            canvas.addEventListener('touchend', function (e) {
                 if (tempX) {
                     // Stop flashing
                     clearInterval(flashInterval);
@@ -463,6 +668,7 @@ document.addEventListener('click', function(e) {
                 placeDot(x, y, lastCanvas);
             }
         });
+
         }
         </script>
 </body>
