@@ -69,9 +69,9 @@
             <canvas id="gridCanvas2"></canvas>
             <div id="scoreDisplay2">Score: 0</div>
             <button id="decibelIndicator2">Decibel Level: N/A</button>
-            <button id="randomButton2" style="display:  none;">Response</button>            <br>
+            <button id="randomButton2">Response</button>            <br>
             <button id="redButton2" style="display:  none;">Red</button>
-            <button id="blueButton2">Blue</button>
+            <button id="blueButton2" style="display:  none;">Blue</button>
             <br>
             <input type="number" id="numSquaresX2" value="12" min="1" style="display:none;">
             <input type="number" id="numSquaresY2" value="13" min="1" style="display:none;">
@@ -161,7 +161,7 @@ let dotColor = color; // Default dot color
 
                 // Calculate the frequency and decibel index of the placed dot
                 const frequencyIndex = Math.floor(x / gridSizeX);
-                const decibelLevel = -10 + Math.floor(y / gridSizeY) * 10;
+                const decibelLevel = -10 + Math.floor(y / (gridSizeY/2)) * 5;
 
                 // Check if the placed dot matches any of the random decibel levels
                 if (randomDecibelLevels[frequencyIndex] === decibelLevel) {
@@ -261,10 +261,45 @@ let dotColor = color; // Default dot color
 let randomDecibelLevels = [];
 function generateRandomDecibelLevels() {
     const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
-    randomDecibelLevels = frequencies.map(() => {
-        const maxDecibelIndex = Math.floor(canvas.height / gridSizeY);
-        const randomDecibelIndex = Math.floor(Math.random() * maxDecibelIndex);
-        return -10 + randomDecibelIndex * 10; // Adjust this formula as needed
+    randomDecibelLevels = frequencies.map((frequency) => {
+        const randomValue = Math.random();
+        let decibelValue;
+        let previousDecibelValue = null;
+        if(frequency <= 2000){
+            if (previousDecibelValue === null || Math.random() >= 0.6) {
+            // Generate a completely random value if it's the first value or with 40% chance
+            const randomValue = Math.random();
+            if (randomValue < 0.55) { // 60% chance for 5 to 40
+                decibelValue = 5 + Math.floor(Math.random() * ((40 - 5) / 5 + 1)) * 5;
+            } else if (randomValue < 0.85) { // 30% chance for 40 to 60
+                decibelValue = 40 + Math.floor(Math.random() * ((60 - 40) / 5 + 1)) * 5;
+            } else if (randomValue < 0.95) { // 5% chance for 60 to 80
+                decibelValue = 60 + Math.floor(Math.random() * ((80 - 60) / 5 + 1)) * 5;
+            } else { // 5% chance for 80 to 115
+                decibelValue = 80 + Math.floor(Math.random() * ((115 - 80) / 5 + 1)) * 5;
+            }
+        } else {
+            // With 60% chance, generate a value within +/- 15 dB of the previous value
+            decibelValue = previousDecibelValue + (Math.floor(Math.random() * 7) - 3) * 5; // -15 to +15 dB in steps of 5
+            // Ensure decibelValue is within the allowed range
+            decibelValue = Math.max(5, Math.min(115, decibelValue));
+        }
+        previousDecibelValue = decibelValue;
+        return decibelValue;
+
+        }
+        else { 
+            if (randomValue < 0.35) { // 60% chance for 5 to 40
+            decibelValue = 5 + Math.floor(Math.random() * ((40 - 5) / 5 + 1)) * 5;
+        } else if (randomValue < 0.70) { // 30% chance for 40 to 60
+            decibelValue = 40 + Math.floor(Math.random() * ((60 - 40) / 5 + 1)) * 5;
+        } else if (randomValue < 0.93) { // 5% chance for 60 to 80
+            decibelValue = 60 + Math.floor(Math.random() * ((80 - 60) / 5 + 1)) * 5;
+        } else { // 5% chance for 80 to 115
+            decibelValue = 80 + Math.floor(Math.random() * ((115 - 80) / 5 + 1)) * 5;
+        }
+        return decibelValue;
+    }
     });
 }
 
