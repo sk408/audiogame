@@ -167,12 +167,12 @@
             let gridSizeX, gridSizeY;
             if (window.innerWidth <= 900) {
                 // For mobile devices
-                canvas.width = window.innerWidth / 2;
-                canvas.height = window.innerHeight * 0.475; // Adjusted to leave 5% for buttons
+                canvas.width = window.innerWidth ;
+                canvas.height = window.innerHeight ; // Adjusted to leave 5% for buttons
             } else {
                 // For desktop
                 canvas.width = window.innerWidth / 3;
-                canvas.height = window.innerHeight * 0.8;
+                canvas.height = window.innerHeight * .8;
             }
             function redrawCanvas() {
                 ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
