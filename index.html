@@ -60,8 +60,9 @@
             /* Change this to the color you want */
         }
 
-        @media only screen and (max-width: 600px) {
+        @media (max-width: 900px) {
             canvas {
+            font-size: 8px;
                 width: 50vw;
                 height: 47.5vh;
                 /* Adjusted to leave 5% for buttons */
@@ -164,13 +165,13 @@
             const dotRadius = 8;
             let dots = []; // Array to store the dots
             let gridSizeX, gridSizeY;
-            if (window.innerWidth <= 600) {
+            if (window.innerWidth <= 900) {
                 // For mobile devices
                 canvas.width = window.innerWidth / 2;
                 canvas.height = window.innerHeight * 0.475; // Adjusted to leave 5% for buttons
             } else {
                 // For desktop
-                canvas.width = window.innerWidth / 4;
+                canvas.width = window.innerWidth / 3;
                 canvas.height = window.innerHeight * 0.8;
             }
             function redrawCanvas() {
@@ -180,22 +181,29 @@
                 const decibels = Array.from({ length: canvas.height / gridSizeY + 1 }, (_, i) => -10 + i * 10);
                 const decibelsHalf = Array.from({ length: canvas.height / (gridSizeY / 2) + 1 }, (_, i) => -10 + i * 5); // 5 decibel increments
                 ctx.fillStyle = color;
+                if (window.innerWidth <= 900) {
+                    ctx.font = "9px Arial";
+                } else {
+                    ctx.font = "16px Arial";
+                }
                 for (let i = 0; i <= frequencies.length; i++) {
                     const x = i * gridSizeX;
                     ctx.moveTo(x, 0);
                     ctx.lineTo(x, canvas.height);
+                    if(frequencies[i]>0)
                     ctx.fillText(frequencies[i] + "hz" || '', x + 5, 15); // Draw the frequency label
                 }
                 for (let i = 0; i <= decibels.length; i++) {
                     const y = i * gridSizeY;
                     ctx.moveTo(0, y);
                     ctx.lineTo(canvas.width, y);
+                    if(decibels[i])
                     ctx.fillText(decibels[i] + "dB" || '', 5, y - 5); // Draw the decibel label
                 }
                 for (let i = 0; i <= decibelsHalf.length; i++) {
                     const y = i * (gridSizeY / 2);
                     // Don't draw the grid line, just the label
-                    ctx.fillText(decibelsHalf[i] + "dB" || '', 5, y - 5); // Draw the decibel label
+                    // ctx.fillText(decibelsHalf[i] + "dB" || '', 5, y - 5); // Draw the decibel label
                 }
                 ctx.strokeStyle = "#ddd";
                 ctx.stroke();
