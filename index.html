@@ -81,7 +81,7 @@
 <body oncontextmenu="return false;">
     <!-- <button onclick="getAudioOutputs()">Get Audio Outputs</button><br>
 <select id="audioOutputs"></select><br> -->
-    <div>Double click or press S to store threshold.<br>Thresholds are randomly generated each load.<br>Use your mouse
+    <div id="instructions">Double click or press S to store threshold.<br>Thresholds are randomly generated each load.<br>Use your mouse
         to present tones. </div>
     <div class="canvas-container">
 
@@ -136,8 +136,17 @@
                 console.warn('Browser does not support output device selection.');
             }
         }
-        includeCanvasLogic(1, "#00f", 12, 13);
-        includeCanvasLogic(2, "#f00", 12, 13);
+        if (window.innerWidth <= 700) {
+            includeCanvasLogic(1, "#00f", 12, 13);
+            document.getElementById('canvasContainer2').style.display = 'none';
+            document.getElementById('instructions').style.display = 'none';
+            
+        } else {
+            includeCanvasLogic(1, "#00f", 12, 13);
+            includeCanvasLogic(2, "#f00", 12, 13);
+        }
+        // includeCanvasLogic(1, "#00f", 12, 13);
+        // includeCanvasLogic(2, "#f00", 12, 13);
         // Disable long-press context menu
         document.addEventListener('touchstart', function (event) {
             event.preventDefault();
