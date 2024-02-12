@@ -253,7 +253,10 @@
 
             }
             window.addEventListener('keydown', function (e) {
-                
+                if(canvasId != document.getElementById('lastCanvas').value)
+                    {
+                        return;
+                    }
                 frequencyX = coordinatesToFrequencyDecibels(lastX, lastY).frequency;
                 decibelY = coordinatesToFrequencyDecibels(lastX, lastY).decibels;
                 const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
@@ -262,7 +265,7 @@
                     case 'ArrowUp':
                         lastY = frequencyDecibelsToCoordinates(frequencyX, decibelY - 5).y;
                         // redrawCanvas();
-                        drawReticle();
+                        // drawReticle();
                         break;
                     case 'ArrowDown':
                         lastY = frequencyDecibelsToCoordinates(frequencyX, decibelY + 5).y;
@@ -319,6 +322,10 @@
             let score = 0; // Initialize the score
 
             function placeDot(x, y) {
+                if(canvasId != document.getElementById('lastCanvas').value)
+                    {
+                        return;
+                    }
                 // Convert x, y to frequency and decibels
                 const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
                 const frequencyIndex = Math.floor(x / gridSizeX);
@@ -340,7 +347,7 @@
                     score -= 5000;
                 }
                 document.getElementById(`scoreDisplay${canvasId}`).textContent = `Score: ${score}`; // Update the score display
-                checkAllDotsMatch(); // Check if all dots match the random decibel levels
+                setTimeout( () => { checkAllDotsMatch() }, 10); // Check if all dots match the random decibel levels
             }
             function checkAllDotsMatch() {
                 const frequenciesToCheck = [250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
@@ -441,7 +448,7 @@
                 // You can add any additional actions here, such as updating the UI
             });
             function handleCanvasInteraction(e, eventType) {
-                lastCanvas = canvasId;
+                document.getElementById('lastCanvas').value = canvasId;
                 const rect = canvas.getBoundingClientRect();
                 const mouseX = (eventType === 'mousedown' ? e.clientX : e.touches[0].clientX) - rect.left;
                 const mouseY = (eventType === 'mousedown' ? e.clientY : e.touches[0].clientY) - rect.top;
@@ -451,11 +458,11 @@
                 const decibelLevel = -10 + decibelIndex * 5;
 
                 const gridX = Math.round(mouseX / gridSizeX) * gridSizeX;
-                const frequencyIndex = Math.floor(gridX / gridSizeX);
+                const frequencyIndex = Math.round(gridX / gridSizeX);
 
                 const randomChance = Math.random();
 
-                if (randomDecibelLevels[frequencyIndex] <= decibelLevel || randomChance < 0.1) {
+                if (randomDecibelLevels[frequencyIndex] <= decibelLevel || randomChance < 0.2) {
                     document.getElementById(`randomButton${canvasId}`).classList.add('lightUp');
                 } else {
                     document.getElementById(`randomButton${canvasId}`).classList.remove('lightUp');
@@ -466,7 +473,7 @@
                 tempX = { x: gridX, y: gridY };
                 shouldContinue = true;
                 holdStart = Date.now();
-
+                
                 holdTimeout = setTimeout(() => {
 
                     flashInterval = setInterval(() => {
@@ -477,12 +484,12 @@
                         };
                     }, 300);
                 }, 20);
-
-                const frequency = getFrequency(frequencyIndex);
-                playSound(frequency);
+                const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
+                console.log(frequencyIndex);
+                playSound(frequencies[frequencyIndex]);
 
                 beepInterval = setInterval(() => {
-                    playSound(frequency);
+                    playSound(frequencies[frequencyIndex]);
                 }, 650);
 
                 decibelIndicator.classList.add('flashing');
@@ -495,6 +502,7 @@
                 clickCount++;
                 lastY = gridY;
                 lastX = gridX;
+                
                 document.getElementById('lastCanvas').value = canvasId;
                 setTimeout(() => {
                     if (clickCount >= 2) {
@@ -539,7 +547,7 @@
 
             function getFrequency(frequencyIndex) {
                 const frequencies = [0, 125, 250, 500, 750, 1000, 1500, 2000, 3000, 4000, 6000, 8000];
-                return frequencies[frequencyIndex] || 440;
+                return frequencies[frequencyIndex];
             }
 
             function playSound(frequency) {
@@ -689,7 +697,7 @@
                 }
                 if (event.key === ' ') { // Check if the pressed key is the spacebar
                     // Create oscillator and gain node
-                    if(canvasId != lastCanvas)
+                    if(canvasId != document.getElementById('lastCanvas').value)
                     {
                         return;
                     }
@@ -733,10 +741,7 @@
 
             // Add event listener for spacebar keyup
             document.addEventListener('keyup', function (event) {
-                if(canvasId != lastCanvas)
-                    {
-                        return;
-                    }
+
                 if (event.key === ' ') { // Check if the released key is the spacebar
                     // Stop playing the sound
                     activated = 0;
@@ -752,6 +757,16 @@
                 return frequencies[frequencyIndex] || 440; // Default to A4 if out of bounds
             }
         }
+        document.addEventListener('keydown', function (event){
+                if(event.key === 'l') {
+                
+                console.log(document.getElementById('lastCanvas').value);
+                if(document.getElementById('lastCanvas').value == 2) { console.log("there")
+                document.getElementById('lastCanvas').value = 1; return;
+                } else
+            if(document.getElementById('lastCanvas').value == 1){ console.log("here")
+            document.getElementById('lastCanvas').value = 2; return;
+            }}});
     </script>
 </body>
 
