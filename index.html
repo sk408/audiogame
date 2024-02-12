@@ -167,8 +167,8 @@
             let gridSizeX, gridSizeY;
             if (window.innerWidth <= 900) {
                 // For mobile devices
-                canvas.width = window.innerWidth ;
-                canvas.height = window.innerHeight ; // Adjusted to leave 5% for buttons
+                canvas.width = window.innerWidth * .8;
+                canvas.height = window.innerHeight * .8; // Adjusted to leave 5% for buttons
             } else {
                 // For desktop
                 canvas.width = window.innerWidth / 3;
