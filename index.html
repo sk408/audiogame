@@ -502,9 +502,10 @@
                 clickCount++;
                 lastY = gridY;
                 lastX = gridX;
-                drawReticle();
+
                 redrawCavas();
                 updateGrid();
+                drawReticle();
                 document.getElementById('lastCanvas').value = canvasId;
                 setTimeout(() => {
                     if (clickCount >= 2) {
